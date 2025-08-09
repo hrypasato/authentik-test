@@ -1,7 +1,13 @@
-# render.yaml (crea este archivo en tu repositorio)
 services:
   - type: web
-    name: authentik
+    name: authentik-server
     dockerCompose: docker-compose.yml
     service: server
+    env: docker
+    healthCheckPath: /-/health/
+    
+  - type: worker
+    name: authentik-worker
+    dockerCompose: docker-compose.yml
+    service: worker
     env: docker
