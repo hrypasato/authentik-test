@@ -1,11 +1,16 @@
 # Usa la imagen oficial de Authentik (basada en Alpine)
 FROM ghcr.io/goauthentik/server:2023.10
 
-# Alternativa 1: Instalar supervisor usando pip (recomendado)
-RUN python -m pip install --no-cache-dir supervisor
+# Solución definitiva: Usar el supervisor ya incluido en la imagen
+# Verificación de que supervisor existe
+RUN which supervisord || { \
+    echo "Supervisor no encontrado, instalando alternativas..." && \
+    apt-get update && apt-get install -y python3-pip && \
+    python3 -m pip install --no-cache-dir supervisor; \
+    }
 
 # Configuración mínima de supervisord
-RUN mkdir -p /var/log/supervisor
+RUN mkdir -p /var/log/supervisor /var/run/supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # =============================================
