@@ -1,43 +1,10 @@
-# Usa la imagen oficial de Authentik (basada en Alpine)
-FROM ghcr.io/goauthentik/server:2023.10
+FROM ghcr.io/goauthentik/server:2024.8.3
 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Cambiar al usuario authentik
+USER authentik
 
-# =============================================
-# Variables de entorno (se configuran en Render)
-# =============================================
+# Exponer puerto
+EXPOSE 8000
 
-# Configuración PostgreSQL (Neon)
-ENV AUTHENTIK_POSTGRESQL__HOST=${AUTHENTIK_POSTGRESQL__HOST}
-ENV AUTHENTIK_POSTGRESQL__PORT=${AUTHENTIK_POSTGRESQL__PORT}
-ENV AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_POSTGRESQL__USER}
-ENV AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_POSTGRESQL__NAME}
-ENV AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_POSTGRESQL__PASSWORD}
-ENV AUTHENTIK_POSTGRESQL__SSLMODE=require
-
-# Configuración Redis (Upstash)
-ENV AUTHENTIK_REDIS__HOST=${AUTHENTIK_REDIS__HOST}
-ENV AUTHENTIK_REDIS__PORT=${AUTHENTIK_REDIS__PORT}
-ENV AUTHENTIK_REDIS__PASSWORD=${AUTHENTIK_REDIS__PASSWORD}
-ENV AUTHENTIK_REDIS__TLS=true
-
-# Configuración básica Authentik
-ENV AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
-
-# Configuración Mailtrap
-ENV AUTHENTIK_EMAIL__HOST=${AUTHENTIK_EMAIL__HOST}
-ENV AUTHENTIK_EMAIL__PORT=${AUTHENTIK_EMAIL__PORT}
-ENV AUTHENTIK_EMAIL__USERNAME=${AUTHENTIK_EMAIL__USERNAME}
-ENV AUTHENTIK_EMAIL__PASSWORD=${AUTHENTIK_EMAIL__PASSWORD}
-ENV AUTHENTIK_EMAIL__FROM=${AUTHENTIK_EMAIL__FROM}
-
-# Puerto expuesto
-EXPOSE 9000
-EXPOSE 9443
-
-# Puerto expuesto
-EXPOSE 9000
-EXPOSE 9443
-
-# Solución definitiva: Usa el sistema de inicio nativo de Authentik
-CMD ["/bin/sh", "-c", "echo 'Iniciando servicios Authentik...'; /authentik-server & /authentik-worker"]
+# Comando por defecto
+CMD ["server"]
