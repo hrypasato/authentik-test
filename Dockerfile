@@ -1,16 +1,6 @@
 # Usa la imagen oficial de Authentik (basada en Alpine)
 FROM ghcr.io/goauthentik/server:2023.10
 
-# Solución definitiva: Usar el supervisor ya incluido en la imagen
-# Verificación de que supervisor existe
-RUN which supervisord || { \
-    echo "Supervisor no encontrado, instalando alternativas..." && \
-    apt-get update && apt-get install -y python3-pip && \
-    python3 -m pip install --no-cache-dir supervisor; \
-    }
-
-# Configuración mínima de supervisord
-RUN mkdir -p /var/log/supervisor /var/run/supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # =============================================
@@ -45,5 +35,9 @@ ENV AUTHENTIK_EMAIL__FROM=${AUTHENTIK_EMAIL__FROM}
 EXPOSE 9000
 EXPOSE 9443
 
-# Punto de entrada
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Puerto expuesto
+EXPOSE 9000
+EXPOSE 9443
+
+# Solución definitiva: Usa el sistema de inicio nativo de Authentik
+CMD ["/bin/sh", "-c", "echo 'Iniciando servicios Authentik...'; /authentik-server & /authentik-worker"]
