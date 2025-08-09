@@ -21,8 +21,13 @@ USER authentik
 EXPOSE 8000
 
 # Script de inicio personalizado
-COPY --chown=authentik:authentik start.sh /start.sh
+COPY start.sh /start.sh
 RUN chmod +x /start.sh
+
+# Cambiar ownership al usuario authentik
+USER root
+RUN chown authentik:authentik /start.sh
+USER authentik
 
 # Comando por defecto
 CMD ["/start.sh"]
