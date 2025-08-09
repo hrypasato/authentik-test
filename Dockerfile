@@ -1,12 +1,11 @@
 # Usa la imagen oficial de Authentik (basada en Alpine)
 FROM ghcr.io/goauthentik/server:2023.10
 
-# Instala supervisor (usando apt-get para Debian)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends supervisor && \
-    rm -rf /var/lib/apt/lists/*
+# Alternativa 1: Instalar supervisor usando pip (recomendado)
+RUN python -m pip install --no-cache-dir supervisor
 
-# Configuración de supervisord
+# Configuración mínima de supervisord
+RUN mkdir -p /var/log/supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # =============================================
