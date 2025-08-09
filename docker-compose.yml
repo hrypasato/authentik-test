@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  server:
+    image: ghcr.io/goauthentik/server:2023.10
+    environment:
+      # Configuración de PostgreSQL (Neon)
+      AUTHENTIK_POSTGRESQL__HOST: ${NEON_HOST}
+      AUTHENTIK_POSTGRESQL__PORT: ${NEON_PORT}
+      AUTHENTIK_POSTGRESQL__USER: ${NEON_USER}
+      AUTHENTIK_POSTGRESQL__NAME: ${NEON_DB}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${NEON_PASSWORD}
+      AUTHENTIK_POSTGRESQL__SSLMODE: require
+      
+      # Configuración de Redis (Upstash)
+      AUTHENTIK_REDIS__HOST: ${UPSTASH_REDIS_HOST}
+      AUTHENTIK_REDIS__PORT: ${UPSTASH_REDIS_PORT}
+      AUTHENTIK_REDIS__PASSWORD: ${UPSTASH_REDIS_PASSWORD}
+      AUTHENTIK_REDIS__TLS: "true"
+      
+      # Configuración básica de Authentik
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      
+      # Configuración de Mailtrap (Email)
+      AUTHENTIK_EMAIL__HOST: ${MAILTRAP_HOST}
+      AUTHENTIK_EMAIL__PORT: ${MAILTRAP_PORT}
+      AUTHENTIK_EMAIL__USERNAME: ${MAILTRAP_USERNAME}
+      AUTHENTIK_EMAIL__PASSWORD: ${MAILTRAP_PASSWORD}
+      AUTHENTIK_EMAIL__FROM: ${EMAIL_FROM}
+      AUTHENTIK_EMAIL__USE_TLS: "true"
+      AUTHENTIK_EMAIL__USE_SSL: "false"
+      AUTHENTIK_EMAIL__TIMEOUT: "10"
+      
+    volumes:
+      - media:/media
+      - custom-templates:/templates
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/-/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    image: ghcr.io/goauthentik/server:2023.10
+    environment:
+      # Configuración compartida con el servicio server
+      AUTHENTIK_POSTGRESQL__HOST: ${NEON_HOST}
+      AUTHENTIK_POSTGRESQL__PORT: ${NEON_PORT}
+      AUTHENTIK_POSTGRESQL__USER: ${NEON_USER}
+      AUTHENTIK_POSTGRESQL__NAME: ${NEON_DB}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${NEON_PASSWORD}
+      AUTHENTIK_POSTGRESQL__SSLMODE: require
+      AUTHENTIK_REDIS__HOST: ${UPSTASH_REDIS_HOST}
+      AUTHENTIK_REDIS__PORT: ${UPSTASH_REDIS_PORT}
+      AUTHENTIK_REDIS__PASSWORD: ${UPSTASH_REDIS_PASSWORD}
+      AUTHENTIK_REDIS__TLS: "true"
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_WORKER__APP: "authentik_worker"
+    volumes:
+      - media:/media
+      - custom-templates:/templates
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+
+volumes:
+  media:
+  custom-templates:
